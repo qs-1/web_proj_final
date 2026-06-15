@@ -142,19 +142,17 @@ export function AppSidebar({ subjects, setSubjects, notes, setNotes, activeSubje
           icon={<IconHome />}
           label="Dashboard"
           active={location.pathname === "/"}
-          collapsed={collapsed}
         />
       </div>
 
       {/* ── Subjects ── */}
-      {!collapsed && (
-        <div className="sb-section sb-subjects">
-          <div className="sb-section-head">
-            <span className="sb-section-label">Subjects</span>
-            <button className="sb-icon-btn" onClick={() => setAdding((v) => !v)} aria-label="Add subject">
-              <IconPlus />
-            </button>
-          </div>
+      <div className={`sb-section sb-subjects ${collapsed ? "sb-hide-contents" : ""}`}>
+        <div className="sb-section-head">
+          <span className="sb-section-label">Subjects</span>
+          <button className="sb-icon-btn" onClick={() => setAdding((v) => !v)} aria-label="Add subject">
+            <IconPlus />
+          </button>
+        </div>
 
           {adding && (
             <form className="sb-add-form" onSubmit={handleAddSubject}>
@@ -213,52 +211,62 @@ export function AppSidebar({ subjects, setSubjects, notes, setNotes, activeSubje
             <p className="sb-empty-hint">No subjects yet.</p>
           )}
         </div>
-      )}
 
       {/* ── Spacer ── */}
       <div style={{ flex: 1 }} />
 
       {/* ── Footer ── */}
       <div className="sb-section sb-footer">
-        <div className="sb-footer-wrap" ref={popRef}>
+        <div className="sb-footer-wrap">
           <button
             className={`sb-nav-item ${settingsOpen ? "active" : ""}`}
-            onClick={() => setSettingsOpen(!settingsOpen)}
+            onClick={() => setSettingsOpen(true)}
             title={collapsed ? "Settings" : undefined}
           >
             <span className="sb-nav-icon"><IconSettings /></span>
-            {!collapsed && <span>Settings</span>}
+            <span className="sb-nav-label">Settings</span>
           </button>
-
-          {settingsOpen && (
-            <div className="sb-settings-pop">
-              <div className="sb-user-info">
-                <div className="sb-avatar">{user?.email?.charAt(0).toUpperCase()}</div>
-                <div className="sb-user-text">
-                  <div className="sb-user-name">{user?.username}</div>
-                  <div className="sb-user-email">{user?.email}</div>
-                </div>
-              </div>
-              <div className="sb-pop-divider" />
-              <button className="sb-pop-action danger" onClick={logout}>
-                <IconLogout /> Log out
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </>
+  );
+
+  /* ── Settings Modal ── */
+  const settingsModal = settingsOpen && (
+    <div className="sb-modal-overlay" onClick={() => setSettingsOpen(false)}>
+      <div className="sb-modal-content" ref={popRef} onClick={(e) => e.stopPropagation()}>
+        <div className="sb-modal-header">
+          <h2>Settings</h2>
+          <button className="sb-modal-close" onClick={() => setSettingsOpen(false)}>×</button>
+        </div>
+        <div className="sb-user-info">
+          <div className="sb-avatar">{user?.email?.charAt(0).toUpperCase()}</div>
+          <div className="sb-user-text">
+            <div className="sb-user-name">{user?.username}</div>
+            <div className="sb-user-email">{user?.email}</div>
+          </div>
+        </div>
+        <div className="sb-pop-divider" />
+        <button className="sb-pop-action danger" onClick={() => {
+          setSettingsOpen(false);
+          logout();
+        }}>
+          <IconLogout /> Log out
+        </button>
+      </div>
+    </div>
   );
 
   /* ── Mobile: Sheet overlay ── */
   if (isMobile) {
     return (
       <>
+        {settingsModal}
         {mobileOpen && (
           <div className="sb-overlay" onClick={() => setMobileOpen(false)} />
         )}
         <aside className={`sb-sidebar sb-mobile ${mobileOpen ? "sb-mobile-open" : ""}`}>
-          {sidebarContent}
+          <div className="sb-inner">{sidebarContent}</div>
         </aside>
       </>
     );
@@ -266,16 +274,21 @@ export function AppSidebar({ subjects, setSubjects, notes, setNotes, activeSubje
 
   /* ── Desktop: collapsible ── */
   return (
-    <aside className={`sb-sidebar ${collapsed ? "sb-collapsed" : ""}`}>
-      {sidebarContent}
-      <button
-        className="sb-collapse-btn"
-        onClick={toggle}
-        title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-      >
-        <IconChevron className={collapsed ? "sb-chevron-flip" : ""} />
-      </button>
-    </aside>
+    <>
+      {settingsModal}
+      <aside className={`sb-sidebar ${collapsed ? "sb-collapsed" : ""}`}>
+        <div className="sb-inner">
+          {sidebarContent}
+        </div>
+        <button
+          className="sb-collapse-btn"
+          onClick={toggle}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <IconChevron className={collapsed ? "sb-chevron-flip" : ""} />
+        </button>
+      </aside>
+    </>
   );
 }
 
@@ -290,11 +303,11 @@ export function SidebarTrigger({ className }) {
 }
 
 /* ── NavItem ── */
-function NavItem({ to, icon, label, active, collapsed }) {
+function NavItem({ to, icon, label, active }) {
   return (
-    <Link to={to} className={`sb-nav-item ${active ? "active" : ""}`} title={collapsed ? label : undefined}>
+    <Link to={to} className={`sb-nav-item ${active ? "active" : ""}`}>
       <span className="sb-nav-icon">{icon}</span>
-      {!collapsed && <span>{label}</span>}
+      <span className="sb-nav-label">{label}</span>
     </Link>
   );
 }
