@@ -7,12 +7,11 @@
 
 .auth-card {
   width: 100%;
-  max-width: 420px;
-  padding: var(--sp-10) var(--sp-8);
-  background: var(--glass);
-  border: 1px solid var(--border);
+  max-width: 400px;
+  padding: var(--sp-8) var(--sp-8);
+  background: var(--bg-1);
+  border: 1px solid var(--border-color);
   border-radius: var(--r-xl);
-  backdrop-filter: blur(18px);
   box-shadow: var(--shadow-lg);
   animation: slideUp var(--t-slow) both;
 }
@@ -22,17 +21,27 @@
   align-items: center;
   justify-content: center;
   gap: var(--sp-3);
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
   margin-bottom: var(--sp-2);
+}
+.auth-brand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-md);
+  background: var(--primary);
+  display: grid;
+  place-items: center;
+  color: var(--primary-foreground);
+  flex-shrink: 0;
 }
 
 .auth-sub {
   text-align: center;
   color: var(--text-muted);
   margin: 0 0 var(--sp-8);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
 .auth-form {
@@ -44,12 +53,12 @@
 .auth-form .btn-primary {
   margin-top: var(--sp-2);
   width: 100%;
-  padding: 12px;
+  padding: 11px;
 }
 
 .auth-foot {
   text-align: center;
   margin-top: var(--sp-6);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: var(--text-muted);
 }

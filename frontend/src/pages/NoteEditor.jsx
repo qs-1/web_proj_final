@@ -161,7 +161,7 @@ export default function NoteEditor() {
                 <span className="spinner" /> Building your notes…
               </>
             ) : (
-              "✨ Build My Notes"
+              "Build My Notes"
             )}
           </button>
         </div>
@@ -195,7 +195,6 @@ export default function NoteEditor() {
             </div>
           ) : (
             <div className="preview-placeholder">
-              <div className="empty-emoji">🪄</div>
               <p className="muted">
                 Your themed notes will appear here once you click{" "}
                 <strong>Build My Notes</strong>.

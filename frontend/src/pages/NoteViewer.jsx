@@ -16,34 +16,67 @@ export default function NoteViewer() {
   const [shareUrl, setShareUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  // Subject management
+  const [subjects, setSubjects] = useState([]);
+  const [subjectMenuOpen, setSubjectMenuOpen] = useState(false);
+  const subjectRef = useRef(null);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
-    api
-      .get(`/api/notes/${id}/`)
-      .then((n) => {
+    Promise.all([
+      api.get(`/api/notes/${id}/`),
+      api.get("/api/subjects/"),
+    ])
+      .then(([n, subs]) => {
         if (!active) return;
         setNote(n);
         setTheme(n.theme);
+        setSubjects(subs);
         if (n.share_id) {
           setShareUrl(`${window.location.origin}/shared/${n.share_id}`);
         }
       })
       .catch((err) => active && setError(err.message || "Note not found."))
       .finally(() => active && setLoading(false));
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [id]);
 
+  // Close subject menu on outside click
+  useEffect(() => {
+    function onDown(e) {
+      if (subjectRef.current && !subjectRef.current.contains(e.target)) {
+        setSubjectMenuOpen(false);
+      }
+    }
+    if (subjectMenuOpen) {
+      document.addEventListener("mousedown", onDown);
+      return () => document.removeEventListener("mousedown", onDown);
+    }
+  }, [subjectMenuOpen]);
+
   async function switchTheme(next) {
-    setTheme(next); // instant client-side re-render
+    setTheme(next);
     try {
       await api.patch(`/api/notes/${id}/`, { theme: next });
       setNote((n) => ({ ...n, theme: next }));
-    } catch {
-      /* non-critical: the visual switch already happened */
+    } catch { /* non-critical */ }
+  }
+
+  async function assignSubject(subjectId) {
+    setSubjectMenuOpen(false);
+    try {
+      const updated = await api.patch(`/api/notes/${id}/`, { subject: subjectId });
+      setNote((n) => ({
+        ...n,
+        subject: updated.subject,
+        subject_name: updated.subject_name,
+        subject_color: updated.subject_color,
+      }));
+    } catch (err) {
+      setError(err.message || "Could not update subject.");
     }
   }
 
@@ -63,20 +96,52 @@ export default function NoteViewer() {
     }
   }
 
+  /**
+   * PDF export via html2pdf.js using the Promise-based outputPdf approach.
+   * html2pdf v0.14 builder chain: we use .outputPdf('blob') which returns
+   * a real Promise, then manually trigger download.
+   */
   async function handleExport() {
-    const html2pdf = (await import("html2pdf.js")).default;
+    if (exporting) return;
     const el = printRef.current;
     if (!el) return;
-    html2pdf()
-      .set({
-        margin: 0,
-        filename: `${(note?.title || "folio-note").replace(/\s+/g, "-")}.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: null },
-        jsPDF: { unit: "pt", format: "a4", orientation: "portrait" },
-      })
-      .from(el)
-      .save();
+    setExporting(true);
+    setError("");
+    try {
+      const { default: html2pdf } = await import("html2pdf.js");
+      const filename = `${(note?.title || "folio-note").replace(/\s+/g, "-")}.pdf`;
+
+      const blob = await html2pdf()
+        .set({
+          margin: [8, 8, 8, 8],
+          filename,
+          image: { type: "jpeg", quality: 0.95 },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: "#ffffff",
+          },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        })
+        .from(el)
+        .outputPdf("blob");
+
+      // Manually trigger download
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("PDF export error:", err);
+      setError("PDF export failed — try using browser Print (Ctrl+P) instead.");
+    } finally {
+      // Clean up any leftover html2canvas DOM clones
+      document.querySelectorAll(".html2canvas-container").forEach((n) => n.remove());
+      setExporting(false);
+    }
   }
 
   async function handleDelete() {
@@ -110,10 +175,54 @@ export default function NoteViewer() {
 
   return (
     <div className="viewer fade-in">
-      <div className="viewer-bar">
-        <button className="btn btn-ghost btn-sm" onClick={() => navigate("/")}>
-          ← Back
-        </button>
+      {/* ── Row 1: back + subject + theme toggle ── */}
+      <div className="viewer-row viewer-row-top">
+        <div className="viewer-bar-left">
+          <button className="btn btn-ghost btn-sm" onClick={() => navigate("/")}>
+            ← Back
+          </button>
+
+          {/* Subject chip */}
+          <div className="subject-assign" ref={subjectRef}>
+            <button
+              className="btn btn-ghost btn-sm subject-chip-btn"
+              onClick={() => setSubjectMenuOpen((v) => !v)}
+            >
+              {note.subject ? (
+                <>
+                  <span className="dot" style={{ background: note.subject_color }} />
+                  {note.subject_name}
+                </>
+              ) : (
+                <span className="dim">+ Subject</span>
+              )}
+            </button>
+
+            {subjectMenuOpen && (
+              <div className="subject-dropdown">
+                {note.subject && (
+                  <button className="sd-item sd-remove" onClick={() => assignSubject(null)}>
+                    Remove from subject
+                  </button>
+                )}
+                {subjects.length > 0 && note.subject && <div className="sd-divider" />}
+                {subjects.map((s) => (
+                  <button
+                    key={s.id}
+                    className={`sd-item ${note.subject === s.id ? "sd-active" : ""}`}
+                    onClick={() => assignSubject(s.id)}
+                  >
+                    <span className="dot" style={{ background: s.color }} />
+                    {s.name}
+                  </button>
+                ))}
+                {subjects.length === 0 && (
+                  <div className="sd-empty dim">No subjects yet</div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
 
         <div className="theme-toggle">
           <button
@@ -129,25 +238,31 @@ export default function NoteViewer() {
             Textbook
           </button>
         </div>
-
-        <div className="viewer-actions">
-          <button
-            className="btn btn-ghost btn-sm"
-            onClick={handleShare}
-            disabled={busy}
-          >
-            {copied ? "✓ Link copied" : shareUrl ? "🔗 Copy link" : "🔗 Share"}
-          </button>
-          <button className="btn btn-ghost btn-sm" onClick={handleExport}>
-            ⬇ Export PDF
-          </button>
-          <button className="btn btn-danger btn-sm" onClick={handleDelete}>
-            Delete
-          </button>
-        </div>
       </div>
 
-      {error && <div className="error-banner">{error}</div>}
+      {/* ── Row 2: actions ── */}
+      <div className="viewer-row viewer-row-actions">
+        <button
+          className="btn btn-ghost btn-sm btn-share"
+          onClick={handleShare}
+          disabled={busy}
+        >
+          {copied ? "Link copied" : shareUrl ? "Copy link" : "Share"}
+        </button>
+        <button
+          className="btn btn-ghost btn-sm"
+          onClick={handleExport}
+          disabled={exporting}
+        >
+          {exporting ? "Exporting…" : "Export PDF"}
+        </button>
+        <button className="btn btn-danger btn-sm" onClick={handleDelete}>
+          Delete
+        </button>
+      </div>
+
+      {error && <div className="error-banner" style={{ marginBottom: "var(--sp-4)" }}>{error}</div>}
+
       {shareUrl && (
         <div className="share-bar">
           <span className="dim">Public link:</span>

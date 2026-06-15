@@ -1,68 +1,62 @@
-import { useState } from "react";
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
-import "./Layout.css";
+import { Outlet } from "react-router-dom";
+import { SidebarProvider, SidebarTrigger, useSidebar } from "./AppSidebar.jsx";
+import { AppSidebar } from "./AppSidebar.jsx";
+import { useState, useEffect } from "react";
+import { api } from "../api/client";
 
-export default function Layout() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
+function LayoutInner() {
+  const { open, isMobile } = useSidebar();
 
-  function handleLogout() {
-    logout();
-    navigate("/login");
-  }
+  /* shared subjects/notes state — lifted here so sidebar & dashboard share it */
+  const [subjects, setSubjects] = useState([]);
+  const [notes, setNotes] = useState([]);
+  const [activeSubject, setActiveSubject] = useState(null);
+
+  useEffect(() => {
+    Promise.all([api.get("/api/subjects/"), api.get("/api/notes/")])
+      .then(([s, n]) => { setSubjects(s); setNotes(n); })
+      .catch(() => {});
+  }, []);
+
+  const collapsed = !isMobile && !open;
+  const marginLeft = isMobile ? 0 : collapsed ? 52 : 256;
 
   return (
-    <div className="app-shell">
-      <button
-        className="hamburger btn btn-icon btn-ghost"
-        onClick={() => setOpen((v) => !v)}
-        aria-label="Toggle menu"
+    <>
+      <AppSidebar
+        subjects={subjects}
+        setSubjects={setSubjects}
+        notes={notes}
+        setNotes={setNotes}
+        activeSubject={activeSubject}
+        setActiveSubject={setActiveSubject}
+      />
+      <div
+        className="layout-main"
+        style={{
+          marginLeft,
+          transition: "margin-left 0.2s ease",
+          minHeight: "100vh",
+        }}
       >
-        ☰
-      </button>
-
-      <aside className={`sidebar ${open ? "open" : ""}`}>
-        <Link to="/" className="brand" onClick={() => setOpen(false)}>
-          <img src="/folio.svg" alt="" width="32" height="32" />
-          <span>Folio</span>
-        </Link>
-
-        <nav className="nav">
-          <NavLink to="/" end className="nav-link" onClick={() => setOpen(false)}>
-            <span className="nav-ico">🏠</span> Dashboard
-          </NavLink>
-          <NavLink
-            to="/notes/new"
-            className="nav-link"
-            onClick={() => setOpen(false)}
-          >
-            <span className="nav-ico">✨</span> New Note
-          </NavLink>
-        </nav>
-
-        <div className="sidebar-foot">
-          <div className="user-chip">
-            <div className="avatar">
-              {(user?.username || "?").charAt(0).toUpperCase()}
-            </div>
-            <div className="user-meta">
-              <div className="user-name">{user?.username}</div>
-              <div className="user-mail dim">{user?.email || "Signed in"}</div>
-            </div>
+        {isMobile && (
+          <div className="layout-mobile-header">
+            <SidebarTrigger />
+            <span className="layout-brand">Folio</span>
           </div>
-          <button className="btn btn-ghost btn-sm" onClick={handleLogout}>
-            Log out
-          </button>
-        </div>
-      </aside>
+        )}
+        <main className="layout-content">
+          <Outlet context={{ subjects, setSubjects, notes, setNotes, activeSubject, setActiveSubject }} />
+        </main>
+      </div>
+    </>
+  );
+}
 
-      {open && <div className="scrim" onClick={() => setOpen(false)} />}
-
-      <main className="content">
-        <Outlet />
-      </main>
-    </div>
+export default function Layout() {
+  return (
+    <SidebarProvider>
+      <LayoutInner />
+    </SidebarProvider>
   );
 }

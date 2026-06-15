@@ -38,7 +38,9 @@ export default function Login() {
     <div className="auth-wrap">
       <div className="auth-card">
         <div className="auth-brand">
-          <img src="/folio.svg" alt="" width="34" height="34" />
+          <div className="auth-brand-icon">
+            <img src="/folio.svg" alt="" width="20" height="20" />
+          </div>
           Folio
         </div>
         <p className="auth-sub">Welcome back. Sign in to your notes.</p>

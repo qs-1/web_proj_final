@@ -1,121 +1,10 @@
-.dashboard {
-  display: grid;
-  grid-template-columns: 250px 1fr;
-  gap: var(--sp-8);
+/* Dashboard — notes-only layout (subjects are in the sidebar now) */
+.dashboard-content {
+  max-width: 1100px;
   animation: fadeIn var(--t-slow) both;
 }
 
-/* ---------- Subjects panel ---------- */
-.subjects-panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-1);
-}
-.panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--sp-3);
-}
-.panel-head h2 {
-  font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-muted);
-}
-.panel-empty {
-  font-size: 0.85rem;
-  margin-top: var(--sp-2);
-}
-
-.add-subject {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
-  padding: var(--sp-3);
-  margin-bottom: var(--sp-3);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  animation: slideUp var(--t) both;
-}
-.color-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-}
-.color-swatch {
-  width: 22px;
-  height: 22px;
-  border-radius: var(--r-full);
-  border: 2px solid transparent;
-  cursor: pointer;
-  transition: transform var(--t-fast);
-}
-.color-swatch:hover {
-  transform: scale(1.15);
-}
-.color-swatch.on {
-  border-color: var(--text);
-  box-shadow: 0 0 0 2px var(--bg);
-}
-
-.subject-item {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  width: 100%;
-  padding: 9px 12px;
-  border: none;
-  background: transparent;
-  border-radius: var(--r-md);
-  cursor: pointer;
-  color: var(--text-muted);
-  font-family: inherit;
-  font-size: 0.92rem;
-  font-weight: 600;
-  text-align: left;
-  transition: background var(--t), color var(--t);
-}
-.subject-item:hover {
-  background: var(--surface);
-  color: var(--text);
-}
-.subject-item.active {
-  background: var(--primary-soft);
-  color: var(--text);
-}
-.subject-name {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.count {
-  font-size: 0.78rem;
-  color: var(--text-dim);
-  background: var(--surface-2);
-  border-radius: var(--r-full);
-  padding: 1px 8px;
-}
-.subject-del {
-  opacity: 0;
-  color: var(--text-dim);
-  font-size: 1.1rem;
-  line-height: 1;
-  padding: 0 2px;
-  transition: opacity var(--t), color var(--t);
-}
-.subject-item:hover .subject-del {
-  opacity: 1;
-}
-.subject-del:hover {
-  color: var(--danger);
-}
-
-/* ---------- Notes area ---------- */
-.notes-area {
-  min-width: 0;
-}
+/* ---------- Notes header ---------- */
 .notes-header {
   display: flex;
   align-items: flex-end;
@@ -123,69 +12,128 @@
   gap: var(--sp-4);
   margin-bottom: var(--sp-5);
 }
-.notes-header h1 {
-  font-size: 1.9rem;
+.notes-header-left h1 {
+  font-size: 1.75rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
 }
-.notes-header p {
-  margin: 4px 0 0;
-  font-size: 0.92rem;
+.notes-header-left p {
+  margin: 3px 0 0;
+  font-size: 0.875rem;
 }
 
 .search-box {
-  margin-bottom: var(--sp-6);
-  max-width: 380px;
+  margin-bottom: var(--sp-5);
+  max-width: 340px;
 }
 
 .notes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: var(--sp-4);
 }
 
 .empty-state {
   text-align: center;
   padding: var(--sp-16) var(--sp-6);
-  background: var(--surface);
-  border: 1px dashed var(--border-strong);
+  border: 1px dashed var(--border-color);
   border-radius: var(--r-xl);
 }
-.empty-emoji {
-  font-size: 3rem;
-  margin-bottom: var(--sp-3);
+.empty-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto var(--sp-4);
+  color: var(--text-dim);
+  opacity: 0.5;
 }
 .empty-state h3 {
-  font-size: 1.3rem;
+  font-size: 1.15rem;
   margin-bottom: var(--sp-2);
+  font-weight: 700;
 }
 .empty-state p {
-  max-width: 420px;
+  max-width: 380px;
   margin: 0 auto var(--sp-6);
+  font-size: 0.9rem;
 }
 
-@media (max-width: 860px) {
-  .dashboard {
-    grid-template-columns: 1fr;
+/* ---------- New Note card ---------- */
+.new-note-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  min-height: 160px;
+  border: 1.5px dashed var(--border-color);
+  border-radius: var(--r-lg);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    border-color var(--t),
+    background var(--t),
+    color var(--t),
+    transform var(--t);
+}
+.new-note-card:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--text);
+}
+.new-note-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-full);
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  color: var(--text-muted);
+  transition: background var(--t), color var(--t);
+}
+.new-note-card:hover .new-note-icon {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.new-note-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.no-match-hint {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: var(--sp-8) var(--sp-4);
+  font-size: 0.9rem;
+}
+
+/* ---------- Layout helpers from Layout.jsx ---------- */
+.layout-mobile-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+.layout-brand {
+  font-weight: 700;
+  font-size: 0.92rem;
+  letter-spacing: -0.02em;
+}
+.layout-content {
+  padding: 24px 32px;
+}
+
+@media (max-width: 767px) {
+  .layout-content {
+    padding: 16px;
   }
-  .subjects-panel {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--sp-2);
+  .notes-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   }
-  .panel-head {
-    width: 100%;
-    margin-bottom: 0;
-  }
-  .add-subject {
-    width: 100%;
-  }
-  .subject-item {
-    width: auto;
-  }
-  .notes-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
+  .search-box { max-width: 100%; }
 }
