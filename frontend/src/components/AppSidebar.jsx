@@ -121,14 +121,19 @@ export function AppSidebar({ subjects, setSubjects, notes, setNotes, activeSubje
     } catch {}
   }
 
+  const [subjectToDelete, setSubjectToDelete] = useState(null);
+
   async function handleDeleteSubject(id) {
-    if (!confirm("Delete this subject and all its notes?")) return;
     try {
       await api.del(`/api/subjects/${id}/`);
       setSubjects((s) => s.filter((x) => x.id !== id));
       setNotes((n) => n.filter((x) => x.subject !== id));
       if (activeSubject === id) setActiveSubject(null);
-    } catch {}
+      setSubjectToDelete(null);
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert(err.message || "Could not delete subject.");
+    }
   }
 
   const collapsed = !isMobile && !open;
@@ -178,33 +183,39 @@ export function AppSidebar({ subjects, setSubjects, notes, setNotes, activeSubje
             </form>
           )}
 
-          <button
+          <div
             className={`sb-subject-item ${activeSubject === null ? "active" : ""}`}
             onClick={() => setActiveSubject(null)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setActiveSubject(null); }}
           >
             <span className="dot" style={{ background: "var(--text-dim)" }} />
             <span className="grow">All notes</span>
             <span className="sb-count">{notes.length}</span>
-          </button>
+          </div>
 
           {subjects.map((s) => (
-            <button
+            <div
               key={s.id}
               className={`sb-subject-item ${activeSubject === s.id ? "active" : ""}`}
               onClick={() => setActiveSubject(s.id)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setActiveSubject(s.id); }}
             >
               <span className="dot" style={{ background: s.color }} />
               <span className="grow sb-subject-name">{s.name}</span>
-              <span className="sb-count">{s.note_count}</span>
               <button
                 type="button"
                 className="sb-subject-del"
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteSubject(s.id); }}
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSubjectToDelete(s); }}
                 title="Delete subject"
               >
                 ×
               </button>
-            </button>
+              <span className="sb-count">{s.note_count}</span>
+            </div>
           ))}
 
           {subjects.length === 0 && !adding && (
@@ -257,10 +268,29 @@ export function AppSidebar({ subjects, setSubjects, notes, setNotes, activeSubje
     </div>
   );
 
+  /* ── Delete Subject Modal ── */
+  const deleteSubjectModal = subjectToDelete && (
+    <div className="sb-modal-overlay" onClick={() => setSubjectToDelete(null)}>
+      <div className="sb-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="sb-modal-header">
+          <h2>Delete Subject</h2>
+        </div>
+        <p className="dim" style={{ marginBottom: "20px", fontSize: "0.9rem", lineHeight: 1.5 }}>
+          Are you sure you want to permanently delete <strong>{subjectToDelete.name}</strong> and all its notes? This cannot be undone.
+        </p>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+          <button className="btn btn-ghost" onClick={() => setSubjectToDelete(null)}>Cancel</button>
+          <button className="btn btn-danger" onClick={() => handleDeleteSubject(subjectToDelete.id)}>Yes, delete subject</button>
+        </div>
+      </div>
+    </div>
+  );
+
   /* ── Mobile: Sheet overlay ── */
   if (isMobile) {
     return (
       <>
+        {deleteSubjectModal}
         {settingsModal}
         {mobileOpen && (
           <div className="sb-overlay" onClick={() => setMobileOpen(false)} />
@@ -275,6 +305,7 @@ export function AppSidebar({ subjects, setSubjects, notes, setNotes, activeSubje
   /* ── Desktop: collapsible ── */
   return (
     <>
+      {deleteSubjectModal}
       {settingsModal}
       <aside className={`sb-sidebar ${collapsed ? "sb-collapsed" : ""}`}>
         <div className="sb-inner">

@@ -68,13 +68,9 @@ export default function Dashboard() {
             </div>
             <span className="new-note-label">New Note</span>
           </Link>
-          {filteredNotes.length === 0 ? (
-            <div className="no-match-hint muted">No matching notes</div>
-          ) : (
-            filteredNotes.map((n) => (
-              <NoteCard key={n.id} note={n} />
-            ))
-          )}
+          {filteredNotes.map((n) => (
+            <NoteCard key={n.id} note={n} />
+          ))}
         </div>
       )}
     </div>

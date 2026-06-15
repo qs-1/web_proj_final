@@ -16,7 +16,6 @@ export default function NoteViewer() {
   const [shareUrl, setShareUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [exporting, setExporting] = useState(false);
 
   // Subject management
   const [subjects, setSubjects] = useState([]);
@@ -101,54 +100,60 @@ export default function NoteViewer() {
    * html2pdf v0.14 builder chain: we use .outputPdf('blob') which returns
    * a real Promise, then manually trigger download.
    */
-  async function handleExport() {
-    if (exporting) return;
+  function handleExport() {
     const el = printRef.current;
     if (!el) return;
-    setExporting(true);
-    setError("");
-    try {
-      const { default: html2pdf } = await import("html2pdf.js");
-      const filename = `${(note?.title || "folio-note").replace(/\s+/g, "-")}.pdf`;
+    const title = note?.title || "Folio Note";
 
-      const blob = await html2pdf()
-        .set({
-          margin: [8, 8, 8, 8],
-          filename,
-          image: { type: "jpeg", quality: 0.95 },
-          html2canvas: {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            backgroundColor: "#ffffff",
-          },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        })
-        .from(el)
-        .outputPdf("blob");
+    // Grab all <style> and <link rel="stylesheet"> from the current page
+    const styleHtml = Array.from(document.querySelectorAll("style, link[rel='stylesheet']")
+    ).map((s) => s.outerHTML).join("\n");
 
-      // Manually trigger download
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("PDF export error:", err);
-      setError("PDF export failed — try using browser Print (Ctrl+P) instead.");
-    } finally {
-      // Clean up any leftover html2canvas DOM clones
-      document.querySelectorAll(".html2canvas-container").forEach((n) => n.remove());
-      setExporting(false);
+    const win = window.open("", "_blank");
+    if (!win) {
+      setError("Popup blocked — please allow popups for this site, then try again.");
+      return;
     }
+
+    win.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>${title}</title>
+        ${styleHtml}
+        <style>
+          body { margin: 0; padding: 24px; background: #fff; color: #111; }
+          @media print {
+            body { padding: 0; }
+            @page { margin: 16mm; }
+          }
+        </style>
+      </head>
+      <body>
+        ${el.innerHTML}
+      </body>
+      </html>
+    `);
+    win.document.close();
+
+    // Give resources a moment to load before triggering print
+    win.addEventListener("load", () => {
+      win.focus();
+      win.print();
+    });
+    // Fallback if load already fired
+    setTimeout(() => {
+      try { win.focus(); win.print(); } catch (_) {}
+    }, 800);
   }
 
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
   async function handleDelete() {
-    if (!confirm("Delete this note permanently?")) return;
     try {
       await api.del(`/api/notes/${id}/`);
-      navigate("/");
+      navigate("/", { replace: true });
     } catch (err) {
       setError(err.message || "Could not delete note.");
     }
@@ -252,14 +257,30 @@ export default function NoteViewer() {
         <button
           className="btn btn-ghost btn-sm"
           onClick={handleExport}
-          disabled={exporting}
         >
-          {exporting ? "Exporting…" : "Export PDF"}
+          Export PDF
         </button>
-        <button className="btn btn-danger btn-sm" onClick={handleDelete}>
+        <button className="btn btn-danger btn-sm" onClick={() => setConfirmDelete(true)}>
           Delete
         </button>
       </div>
+
+      {confirmDelete && (
+        <div className="sb-modal-overlay" onClick={() => setConfirmDelete(false)}>
+          <div className="sb-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="sb-modal-header">
+              <h2>Are you sure?</h2>
+            </div>
+            <p className="dim" style={{ marginBottom: "20px", fontSize: "0.9rem", lineHeight: 1.5 }}>
+              This action cannot be undone. This will permanently delete your note from our servers.
+            </p>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+              <button className="btn btn-ghost" onClick={() => setConfirmDelete(false)}>Cancel</button>
+              <button className="btn btn-danger" onClick={handleDelete}>Yes, delete note</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {error && <div className="error-banner" style={{ marginBottom: "var(--sp-4)" }}>{error}</div>}
 
