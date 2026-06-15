@@ -62,7 +62,10 @@ async function refreshAccessToken() {
  * Core request helper. Attaches JWT, retries once after refresh on 401.
  */
 async function request(path, { method = "GET", body, auth = true, retry = true } = {}) {
-  const headers = { "Content-Type": "application/json" };
+  const headers = {};
+  if (body !== undefined && !(body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
   if (auth && tokenStore.access) {
     headers.Authorization = `Bearer ${tokenStore.access}`;
   }
@@ -70,7 +73,7 @@ async function request(path, { method = "GET", body, auth = true, retry = true }
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
     headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: body !== undefined ? (body instanceof FormData ? body : JSON.stringify(body)) : undefined,
   });
 
   if (res.status === 401 && auth && retry) {

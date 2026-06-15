@@ -14,6 +14,7 @@ export default function NoteEditor() {
   const [newSubject, setNewSubject] = useState("");
   const [theme, setTheme] = useState("minimal");
   const [rawInput, setRawInput] = useState("");
+  const [file, setFile] = useState(null);
 
   const [generated, setGenerated] = useState(null);
   const [generating, setGenerating] = useState(false);
@@ -41,18 +42,25 @@ export default function NoteEditor() {
 
   async function handleGenerate() {
     setError("");
-    if (!rawInput.trim()) {
-      setError("Paste some content first so the AI has something to work with.");
+    if (!rawInput.trim() && !file) {
+      setError("Provide some text or upload a file so the AI has something to work with.");
       return;
     }
     setGenerating(true);
     setGenerated(null);
     try {
-      const res = await api.post("/api/notes/generate/", {
-        raw_input: rawInput,
-        theme,
-        title,
-      });
+      let payload;
+      if (file) {
+        payload = new FormData();
+        payload.append("file", file);
+        if (rawInput.trim()) payload.append("raw_input", rawInput);
+        payload.append("theme", theme);
+        if (title) payload.append("title", title);
+      } else {
+        payload = { raw_input: rawInput, theme, title };
+      }
+
+      const res = await api.post("/api/notes/generate/", payload);
       setGenerated(res.generated_content);
       if (!title && res.generated_content?.title) {
         setTitle(res.generated_content.title);
@@ -73,7 +81,7 @@ export default function NoteEditor() {
       const note = await api.post("/api/notes/", {
         title: title.trim() || generated.title || "Untitled Notes",
         subject,
-        raw_input: rawInput,
+        raw_input: rawInput || (file ? `[Generated from uploaded file: ${file.name}]` : ""),
         generated_content: generated,
         theme,
       });
@@ -138,11 +146,20 @@ export default function NoteEditor() {
           </div>
 
           <div className="field">
-            <label className="label">Your messy content</label>
+            <label className="label">Source material</label>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "10px" }}>
+              <input
+                type="file"
+                className="file-input"
+                accept=".pdf,.docx,.pptx,image/*"
+                onChange={(e) => setFile(e.target.files[0] || null)}
+                style={{ flex: "1 1 200px" }}
+              />
+            </div>
             <textarea
               className="textarea"
-              rows={12}
-              placeholder="Paste lecture notes, textbook paragraphs, bullet dumps — anything. The AI will clean it up and structure it."
+              rows={8}
+              placeholder="Or paste lecture notes, textbook paragraphs, bullet dumps — anything. The AI will clean it up and structure it."
               value={rawInput}
               onChange={(e) => setRawInput(e.target.value)}
             />

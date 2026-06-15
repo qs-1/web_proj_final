@@ -1,4 +1,4 @@
-from rest_framework import permissions, status, viewsets
+from rest_framework import parsers, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -59,9 +59,10 @@ class NoteViewSet(viewsets.ModelViewSet):
 
 
 class GenerateView(APIView):
-    """AI endpoint: raw_input + theme -> structured generated_content."""
+    """AI endpoint: raw_input + theme + file -> structured generated_content."""
 
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [parsers.JSONParser, parsers.MultiPartParser, parsers.FormParser]
 
     def post(self, request):
         serializer = GenerateSerializer(data=request.data)
@@ -69,9 +70,10 @@ class GenerateView(APIView):
         data = serializer.validated_data
         try:
             content = generate_notes(
-                raw_input=data["raw_input"],
+                raw_input=data.get("raw_input", ""),
                 theme=data["theme"],
                 title=data.get("title", ""),
+                file=data.get("file"),
             )
         except AIServiceError as exc:
             return Response(

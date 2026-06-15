@@ -1,6 +1,10 @@
 """Gemini integration: turn messy raw input into structured study notes."""
 
+import os
+import tempfile
 import json
+import docx
+from pptx import Presentation
 
 from django.conf import settings
 from google import genai
@@ -85,10 +89,10 @@ Requirements:
 """
 
 
-def generate_notes(raw_input: str, theme: str = "minimal", title: str = "") -> dict:
+def generate_notes(raw_input: str, theme: str = "minimal", title: str = "", file=None) -> dict:
     """Call Gemini and return a dict matching the generated_content schema."""
-    if not raw_input or not raw_input.strip():
-        raise AIServiceError("No input text provided.")
+    if not raw_input and not file:
+        raise AIServiceError("No input text or file provided.")
 
     api_key = settings.GEMINI_API_KEY
     if not api_key:
@@ -97,11 +101,51 @@ def generate_notes(raw_input: str, theme: str = "minimal", title: str = "") -> d
         )
 
     client = genai.Client(api_key=api_key)
+    gemini_file = None
+    temp_file_path = None
+
+    if file:
+        _, ext = os.path.splitext(file.name)
+        ext = ext.lower()
+
+        if ext == ".docx":
+            try:
+                doc = docx.Document(file)
+                extracted = "\n".join([p.text for p in doc.paragraphs])
+                raw_input = (raw_input or "") + "\n\n--- EXTRACTED DOCX CONTENT ---\n" + extracted
+                file = None
+            except Exception as e:
+                raise AIServiceError(f"Failed to read DOCX file: {e}")
+        elif ext == ".pptx":
+            try:
+                prs = Presentation(file)
+                extracted = []
+                for slide in prs.slides:
+                    for shape in slide.shapes:
+                        if hasattr(shape, "text"):
+                            extracted.append(shape.text)
+                raw_input = (raw_input or "") + "\n\n--- EXTRACTED PPTX CONTENT ---\n" + "\n".join(extracted)
+                file = None
+            except Exception as e:
+                raise AIServiceError(f"Failed to read PPTX file: {e}")
 
     try:
+        contents = [_build_prompt(raw_input or "", theme, title)]
+
+        if file:
+            # Save the file to a temporary location for the SDK to upload
+            _, ext = os.path.splitext(file.name)
+            fd, temp_file_path = tempfile.mkstemp(suffix=ext)
+            with os.fdopen(fd, 'wb') as f:
+                for chunk in file.chunks():
+                    f.write(chunk)
+            
+            gemini_file = client.files.upload(file=temp_file_path)
+            contents.append(gemini_file)
+
         response = client.models.generate_content(
             model=settings.GEMINI_MODEL,
-            contents=_build_prompt(raw_input, theme, title),
+            contents=contents,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
                 response_schema=RESPONSE_SCHEMA,
@@ -110,6 +154,16 @@ def generate_notes(raw_input: str, theme: str = "minimal", title: str = "") -> d
         )
     except Exception as exc:  # network / auth / quota errors
         raise AIServiceError(f"Gemini request failed: {exc}") from exc
+    finally:
+        # Clean up temporary local file
+        if temp_file_path and os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
+        # Clean up remote file reference to save quota
+        if gemini_file:
+            try:
+                client.files.delete(name=gemini_file.name)
+            except Exception:
+                pass
 
     text = (response.text or "").strip()
     if not text:

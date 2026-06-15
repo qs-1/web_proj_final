@@ -89,8 +89,14 @@ class SharedNoteSerializer(serializers.ModelSerializer):
 
 
 class GenerateSerializer(serializers.Serializer):
-    raw_input = serializers.CharField()
+    raw_input = serializers.CharField(required=False, allow_blank=True, default="")
+    file = serializers.FileField(required=False, allow_empty_file=False)
     theme = serializers.ChoiceField(
         choices=[c[0] for c in Note.THEME_CHOICES], default="minimal"
     )
     title = serializers.CharField(required=False, allow_blank=True, default="")
+
+    def validate(self, data):
+        if not data.get("raw_input") and not data.get("file"):
+            raise serializers.ValidationError("Either raw_input or a file must be provided.")
+        return data

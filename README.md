@@ -1,32 +1,32 @@
-# Folio — AI-Powered Themed Notes Builder
+# Folio: AI-Powered Themed Notes Builder
 
-Paste messy course content → Gemini AI rewrites it into clear, structured study
-notes → rendered in your choice of two visual themes (**Minimal / Clean** or
-**Modern Textbook**).
+A web application that takes raw course material or document uploads (PDF, DOCX, PPTX, images), processes them using Gemini AI, and formats the output into clean, structured study notes. Notes can be rendered dynamically in two distinct visual styles: Minimal or Modern Textbook.
 
-- **Backend:** Django 6 + Django REST Framework + JWT auth + SQLite
-- **Frontend:** React 19 (Vite) + React Router + vanilla CSS design system
-- **AI:** Google Gemini (`gemini-2.5-flash`) via the `google-genai` SDK
+## Tech Stack
+
+- **Backend:** Django 6 + Django REST Framework + JWT Authentication + SQLite
+- **Frontend:** React 19 (Vite) + React Router + Vanilla CSS Design System
+- **AI Integration:** Google Gemini (`gemini-flash-latest`) via `google-genai` SDK
 
 ---
 
 ## Features
 
-- 🔐 JWT auth (register, login, auto token refresh)
-- 📚 Subjects with color coding + notes organized under them
-- ✨ AI generation: messy text → structured JSON (summary, sections, key terms, takeaways)
-- 🎨 Two polished themes, switchable instantly client-side on any saved note
-- 🔗 Public share links (no account needed to view)
-- ⬇️ Export to PDF (`html2pdf.js`) + browser print fallback
-- 📱 Responsive layout with a collapsible sidebar
+- JWT Authentication (registration, login, automatic token refresh)
+- Course subjects with color-coding for note categorization
+- AI processing: extracts and formats raw content or documents into structured JSON (summaries, sections, terms, and takeaways)
+- Visual themes (Minimal or Modern Textbook) switchable dynamically on the frontend
+- Public share links for read-only note access
+- PDF export and standard browser print support
+- Responsive interface with a collapsible navigation sidebar
 
 ---
 
 ## Prerequisites
 
-- **Python 3.10+** (3.13 recommended — Django 6 requires 3.12+)
+- **Python 3.10+** (Python 3.13 recommended, Django 6 requires 3.12+)
 - **Node.js 18+**
-- A free **Gemini API key** from [aistudio.google.com](https://aistudio.google.com)
+- A Google **Gemini API key** from [aistudio.google.com](https://aistudio.google.com)
 
 ---
 
@@ -47,8 +47,7 @@ python manage.py migrate
 python manage.py runserver        # serves http://localhost:8000
 ```
 
-> The default model is `gemini-2.5-flash`. Change `GEMINI_MODEL` in `.env`
-> if you want a different one (e.g. `gemini-2.5-pro`).
+> The default model is `gemini-flash-latest`. You can specify a different model by updating `GEMINI_MODEL` in `.env`.
 
 ### 2. Frontend (React)
 
@@ -60,36 +59,36 @@ npm install
 npm run dev                       # serves http://localhost:5173
 ```
 
-Open **http://localhost:5173**, register an account, and start building notes.
+Open **http://localhost:5173**, create an account, and begin creating notes.
 
 ---
 
 ## API Overview
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/api/auth/register/` | — | Create account |
-| POST | `/api/auth/login/` | — | Get JWT access + refresh tokens |
-| POST | `/api/auth/refresh/` | — | Refresh access token |
-| GET  | `/api/auth/me/` | ✓ | Current user |
-| GET/POST | `/api/subjects/` | ✓ | List / create subjects |
-| PUT/DELETE | `/api/subjects/<id>/` | ✓ | Update / delete subject (cascades) |
-| GET/POST | `/api/notes/` | ✓ | List (`?subject=<id>`) / create notes |
-| GET/PUT/PATCH/DELETE | `/api/notes/<id>/` | ✓ | Single note ops |
-| POST | `/api/notes/generate/` | ✓ | **AI**: `raw_input` + `theme` → structured content |
-| POST | `/api/notes/<id>/share/` | ✓ | Enable a public share link |
-| POST | `/api/notes/<id>/unshare/` | ✓ | Disable sharing |
-| GET  | `/api/shared/<uuid>/` | — | **Public** read-only shared note |
+| Method | Endpoint | Auth Required | Description |
+|--------|----------|---------------|-------------|
+| POST | `/api/auth/register/` | No | Create account |
+| POST | `/api/auth/login/` | No | Obtain JWT access and refresh tokens |
+| POST | `/api/auth/refresh/` | No | Refresh access token |
+| GET  | `/api/auth/me/` | Yes | Retrieve current user profile |
+| GET/POST | `/api/subjects/` | Yes | List or create subjects |
+| PUT/DELETE | `/api/subjects/<id>/` | Yes | Update or delete a subject (cascades to notes) |
+| GET/POST | `/api/notes/` | Yes | List (filter with `?subject=<id>`) or create notes |
+| GET/PUT/PATCH/DELETE | `/api/notes/<id>/` | Yes | CRUD operations on a single note |
+| POST | `/api/notes/generate/` | Yes | AI Endpoint: Processes `raw_input` or file upload + `theme` |
+| POST | `/api/notes/<id>/share/` | Yes | Enable a public share link |
+| POST | `/api/notes/<id>/unshare/` | Yes | Disable sharing |
+| GET  | `/api/shared/<uuid>/` | No | View a public read-only shared note |
 
 ---
 
-## Testing
+## Testing & Build
 
 ```bash
-# Backend
+# Run backend tests
 cd backend && source venv/bin/activate && python manage.py test
 
-# Frontend (verify production build)
+# Verify production build for frontend
 cd frontend && npm run build
 ```
 
@@ -97,18 +96,17 @@ cd frontend && npm run build
 
 ## Project Structure
 
-```
+```text
 backend/        Django project (folio), apps: accounts (auth), notes (CRUD + AI)
-frontend/       Vite React app — pages, components, themes, api client, auth context
+frontend/       Vite React app (pages, components, themes, API client, auth context)
 ```
 
-The AI prompt and Gemini call live in `backend/notes/ai_service.py`. The two
-theme renderers live in `frontend/src/themes/`.
+The AI prompt and Gemini processing logic are located in `backend/notes/ai_service.py`. The frontend theme renderers are located in `frontend/src/themes/`.
 
 ---
 
-## Notes
+## Technical Notes
 
-- The SQLite DB (`backend/db.sqlite3`) and `backend/.env` are gitignored.
-- PDF export is image-based (rasterized), which is expected for `html2pdf.js`.
-- Share links are fully public — anyone with the URL can view that note.
+- The SQLite database (`backend/db.sqlite3`) and local environment configuration (`backend/.env`) are excluded from git.
+- PDF generation is handled in the client browser using `html2pdf.js`.
+- Shared note links are public and can be accessed by anyone who has the URL.

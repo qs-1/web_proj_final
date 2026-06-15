@@ -305,6 +305,44 @@ h1, h2, h3, h4 {
   line-height: 1.6;
 }
 
+.file-input {
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--bg-1);
+  border: 1px solid var(--border-color);
+  border-radius: var(--r-md);
+  padding: 6px 10px;
+  width: 100%;
+  cursor: pointer;
+  transition: border-color var(--t), box-shadow var(--t);
+}
+
+.file-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.file-input::file-selector-button {
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--bg-2);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  padding: 5px 10px;
+  margin-right: 12px;
+  cursor: pointer;
+  transition: background var(--t), border-color var(--t), color var(--t);
+}
+
+.file-input::file-selector-button:hover {
+  background: var(--surface-2);
+  border-color: var(--text-muted);
+}
+
 /* ----------------------- Surfaces ----------------------- */
 .card {
   background: var(--bg-1);
