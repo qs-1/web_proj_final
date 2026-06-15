@@ -95,57 +95,74 @@ export default function NoteViewer() {
     }
   }
 
-  /**
-   * PDF export via html2pdf.js using the Promise-based outputPdf approach.
-   * html2pdf v0.14 builder chain: we use .outputPdf('blob') which returns
-   * a real Promise, then manually trigger download.
-   */
-  function handleExport() {
+  const [exporting, setExporting] = useState(false);
+
+  async function handleExport() {
+    if (exporting) return;
     const el = printRef.current;
     if (!el) return;
-    const title = note?.title || "Folio Note";
+    setExporting(true);
+    setError("");
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const { jsPDF } = await import("jspdf");
 
-    // Grab all <style> and <link rel="stylesheet"> from the current page
-    const styleHtml = Array.from(document.querySelectorAll("style, link[rel='stylesheet']")
-    ).map((s) => s.outerHTML).join("\n");
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+      });
 
-    const win = window.open("", "_blank");
-    if (!win) {
-      setError("Popup blocked — please allow popups for this site, then try again.");
-      return;
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+      const imgW = canvas.width;
+      const imgH = canvas.height;
+
+      // A4 dimensions in mm
+      const pdfW = 210;
+      const pdfH = 297;
+      const margin = 8; // mm
+      const contentW = pdfW - margin * 2;
+      const contentH = (imgH * contentW) / imgW;
+
+      const pdf = new jsPDF({
+        orientation: contentH > pdfH ? "portrait" : "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      // If content fits on one page
+      if (contentH <= pdfH - margin * 2) {
+        pdf.addImage(imgData, "JPEG", margin, margin, contentW, contentH);
+      } else {
+        // Multi-page: slice the canvas into page-sized chunks
+        const pageContentH = pdfH - margin * 2;
+        const totalPages = Math.ceil(contentH / pageContentH);
+        for (let i = 0; i < totalPages; i++) {
+          if (i > 0) pdf.addPage();
+          const srcY = (i * pageContentH * imgW) / contentW;
+          const srcH = (pageContentH * imgW) / contentW;
+          // Create a sub-canvas for this page slice
+          const pageCanvas = document.createElement("canvas");
+          pageCanvas.width = imgW;
+          pageCanvas.height = Math.min(srcH, imgH - srcY);
+          const ctx = pageCanvas.getContext("2d");
+          ctx.drawImage(canvas, 0, srcY, imgW, pageCanvas.height, 0, 0, imgW, pageCanvas.height);
+          const pageImg = pageCanvas.toDataURL("image/jpeg", 0.95);
+          const sliceH = (pageCanvas.height * contentW) / imgW;
+          pdf.addImage(pageImg, "JPEG", margin, margin, contentW, sliceH);
+        }
+      }
+
+      const filename = `${(note?.title || "folio-note").replace(/\s+/g, "-")}.pdf`;
+      pdf.save(filename);
+    } catch (err) {
+      console.error("PDF export error:", err);
+      setError("PDF export failed. Error: " + (err.message || err));
+    } finally {
+      document.querySelectorAll(".html2canvas-container").forEach((n) => n.remove());
+      setExporting(false);
     }
-
-    win.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8" />
-        <title>${title}</title>
-        ${styleHtml}
-        <style>
-          body { margin: 0; padding: 24px; background: #fff; color: #111; }
-          @media print {
-            body { padding: 0; }
-            @page { margin: 16mm; }
-          }
-        </style>
-      </head>
-      <body>
-        ${el.innerHTML}
-      </body>
-      </html>
-    `);
-    win.document.close();
-
-    // Give resources a moment to load before triggering print
-    win.addEventListener("load", () => {
-      win.focus();
-      win.print();
-    });
-    // Fallback if load already fired
-    setTimeout(() => {
-      try { win.focus(); win.print(); } catch (_) {}
-    }, 800);
   }
 
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -257,8 +274,9 @@ export default function NoteViewer() {
         <button
           className="btn btn-ghost btn-sm"
           onClick={handleExport}
+          disabled={exporting}
         >
-          Export PDF
+          {exporting ? "Exporting…" : "Export PDF"}
         </button>
         <button className="btn btn-danger btn-sm" onClick={() => setConfirmDelete(true)}>
           Delete
