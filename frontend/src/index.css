@@ -1,0 +1,402 @@
+/* ============================================================
+   Folio — Global Design System
+   Token set adopted from a shadcn theme (amber primary, neutral
+   palette, Space Grotesk). Dark mode is the default; the light
+   palette lives on :root and is applied when <html> has no .dark.
+   The app shell uses these tokens via compatibility aliases so the
+   existing component CSS keeps working.
+   ============================================================ */
+
+:root {
+  --background: oklch(1.0000 0 0);
+  --foreground: oklch(0.2686 0 0);
+  --card: oklch(1.0000 0 0);
+  --card-foreground: oklch(0.2686 0 0);
+  --popover: oklch(1.0000 0 0);
+  --popover-foreground: oklch(0.2686 0 0);
+  --primary: oklch(0.7686 0.1647 70.0804);
+  --primary-foreground: oklch(0 0 0);
+  --secondary: oklch(0.9670 0.0029 264.5419);
+  --secondary-foreground: oklch(0.4461 0.0263 256.8018);
+  --muted: oklch(0.9846 0.0017 247.8389);
+  --muted-foreground: oklch(0.5510 0.0234 264.3637);
+  --shadcn-accent: oklch(0.9869 0.0214 95.2774);
+  --accent-foreground: oklch(0.4732 0.1247 46.2007);
+  --destructive: oklch(0.6368 0.2078 25.3313);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.9276 0.0058 264.5313);
+  --input: oklch(0.9276 0.0058 264.5313);
+  --ring: oklch(0.7686 0.1647 70.0804);
+  --sidebar: oklch(0.9846 0.0017 247.8389);
+  --sidebar-foreground: oklch(0.2686 0 0);
+
+  --font-sans: "Space Grotesk", system-ui, -apple-system, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, serif;
+  --font-mono: "Source Code Pro", ui-monospace, monospace;
+
+  --radius: 0.375rem;
+  --shadow-2xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
+  --shadow-xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
+  --shadow-sm: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 1px 2px -2px hsl(0 0% 0% / 0.1);
+  --shadow: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 1px 2px -2px hsl(0 0% 0% / 0.1);
+  --shadow-md: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 2px 4px -2px hsl(0 0% 0% / 0.1);
+  --shadow-lg: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 4px 6px -2px hsl(0 0% 0% / 0.1);
+  --shadow-xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 8px 10px -2px hsl(0 0% 0% / 0.1);
+  --shadow-2xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.25);
+}
+
+.dark {
+  --background: oklch(0.2046 0 0);
+  --foreground: oklch(0.9219 0 0);
+  --card: oklch(0.2686 0 0);
+  --card-foreground: oklch(0.9219 0 0);
+  --popover: oklch(0.2686 0 0);
+  --popover-foreground: oklch(0.9219 0 0);
+  --primary: oklch(0.8370 0.1280 66.2900);
+  --primary-foreground: oklch(0 0 0);
+  --secondary: oklch(0.2686 0 0);
+  --secondary-foreground: oklch(0.9219 0 0);
+  --muted: oklch(0.2686 0 0);
+  --muted-foreground: oklch(0.7155 0 0);
+  --shadcn-accent: oklch(0.4271 0.0614 51.1885);
+  --accent-foreground: oklch(0.9243 0.1151 95.7459);
+  --destructive: oklch(0.6368 0.2078 25.3313);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.3715 0 0);
+  --input: oklch(0.3715 0 0);
+  --ring: oklch(0.7686 0.1647 70.0804);
+  --sidebar: oklch(0.1684 0 0);
+  --sidebar-foreground: oklch(0.9219 0 0);
+}
+
+/* -------- Compatibility aliases used by component CSS -------- */
+:root,
+.dark {
+  --bg: var(--background);
+  --bg-1: var(--card);
+  --bg-2: var(--secondary);
+  --surface: color-mix(in srgb, var(--foreground) 5%, transparent);
+  --surface-2: color-mix(in srgb, var(--foreground) 9%, transparent);
+  --glass: color-mix(in srgb, var(--card) 82%, transparent);
+
+  --border-strong: color-mix(in srgb, var(--foreground) 22%, transparent);
+
+  --text: var(--foreground);
+  --text-muted: var(--muted-foreground);
+  --text-dim: color-mix(in srgb, var(--muted-foreground) 58%, var(--background));
+
+  /* Brand accent = the bright primary (note: distinct from shadcn's
+     muted --shadcn-accent surface token). */
+  --accent: var(--primary);
+  --primary-600: color-mix(in srgb, var(--primary) 88%, black);
+  --primary-700: color-mix(in srgb, var(--primary) 74%, black);
+  --primary-soft: color-mix(in srgb, var(--primary) 16%, transparent);
+  --primary-glow: color-mix(in srgb, var(--primary) 38%, transparent);
+
+  --danger: var(--destructive);
+  --success: oklch(0.72 0.17 152);
+  --warning: oklch(0.83 0.16 84);
+
+  --shadow-glow: 0 0 0 1px var(--primary-soft), 0 12px 40px var(--primary-glow);
+
+  /* Spacing (4px scale) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* Radii — derived from the theme's --radius */
+  --r-sm: calc(var(--radius) - 2px);
+  --r-md: var(--radius);
+  --r-lg: calc(var(--radius) + 4px);
+  --r-xl: calc(var(--radius) + 10px);
+  --r-full: 999px;
+
+  /* Transitions */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --t-fast: 0.15s var(--ease);
+  --t: 0.25s var(--ease);
+  --t-slow: 0.4s var(--ease);
+
+  /* Fonts */
+  --font-ui: var(--font-sans);
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  color: var(--text);
+  background: var(--bg);
+  background-image:
+    radial-gradient(900px 500px at 12% -8%, color-mix(in srgb, var(--primary) 16%, transparent), transparent 60%),
+    radial-gradient(800px 500px at 110% 10%, color-mix(in srgb, var(--primary) 9%, transparent), transparent 55%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  line-height: 1.55;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color var(--t-fast);
+}
+a:hover {
+  color: var(--primary-700);
+}
+
+h1, h2, h3, h4 {
+  line-height: 1.2;
+  color: var(--text);
+  margin: 0;
+}
+
+::selection {
+  background: var(--primary-soft);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--r-full);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ----------------------- Buttons ----------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform var(--t-fast), background var(--t), box-shadow var(--t),
+    border-color var(--t), opacity var(--t);
+  white-space: nowrap;
+  user-select: none;
+}
+.btn:active {
+  transform: translateY(1px) scale(0.99);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-700));
+  color: var(--primary-foreground);
+  box-shadow: 0 6px 20px var(--primary-glow);
+}
+.btn-primary:hover:not(:disabled) {
+  box-shadow: 0 10px 30px var(--primary-glow);
+  transform: translateY(-1px);
+}
+.btn-ghost {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+}
+.btn-danger {
+  background: color-mix(in srgb, var(--destructive) 14%, transparent);
+  color: var(--destructive);
+  border-color: color-mix(in srgb, var(--destructive) 32%, transparent);
+}
+.btn-danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--destructive) 22%, transparent);
+}
+.btn-sm {
+  padding: 7px 13px;
+  font-size: 0.84rem;
+}
+.btn-icon {
+  padding: 9px;
+  border-radius: var(--r-md);
+}
+
+/* ----------------------- Inputs ----------------------- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.input,
+.textarea,
+.select {
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 11px 14px;
+  width: 100%;
+  transition: border-color var(--t), box-shadow var(--t), background var(--t);
+}
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--text-dim);
+}
+.input:focus,
+.textarea:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+  background: var(--bg-1);
+}
+.textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.6;
+}
+
+/* ----------------------- Surfaces ----------------------- */
+.card {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  backdrop-filter: blur(14px);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: var(--r-full);
+  background: var(--primary-soft);
+  color: var(--accent);
+  border: 1px solid var(--border);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--r-full);
+  flex-shrink: 0;
+}
+
+.error-banner {
+  background: color-mix(in srgb, var(--destructive) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--destructive) 32%, transparent);
+  color: var(--destructive);
+  padding: 10px 14px;
+  border-radius: var(--r-md);
+  font-size: 0.88rem;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+.dim {
+  color: var(--text-dim);
+}
+
+/* ----------------------- Animations ----------------------- */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  0% { background-position: -480px 0; }
+  100% { background-position: 480px 0; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.fade-in {
+  animation: fadeIn var(--t-slow) both;
+}
+.slide-up {
+  animation: slideUp var(--t-slow) both;
+}
+
+/* Shimmer skeleton */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface) 25%,
+    var(--surface-2) 37%,
+    var(--surface) 63%
+  );
+  background-size: 960px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: var(--r-md);
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid color-mix(in srgb, var(--primary-foreground) 35%, transparent);
+  border-top-color: var(--primary-foreground);
+  border-radius: var(--r-full);
+  animation: spin 0.7s linear infinite;
+}
+
+/* ----------------------- Layout helpers ----------------------- */
+.center-screen {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: var(--sp-6);
+}
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+.row {
+  display: flex;
+  align-items: center;
+}
+.spread {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.grow { flex: 1; }

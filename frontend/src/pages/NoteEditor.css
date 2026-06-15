@@ -1,0 +1,92 @@
+.editor {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+.editor-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-6);
+}
+.editor-head h1 {
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.editor-grid {
+  display: grid;
+  grid-template-columns: minmax(380px, 460px) 1fr;
+  gap: var(--sp-6);
+  align-items: start;
+}
+
+.editor-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  padding: var(--sp-6);
+  position: sticky;
+  top: var(--sp-6);
+}
+
+.char-count {
+  font-size: 0.76rem;
+  align-self: flex-end;
+}
+
+.build-btn {
+  width: 100%;
+  padding: 13px;
+  font-size: 1rem;
+}
+
+/* ---------- Preview ---------- */
+.editor-preview {
+  min-width: 0;
+}
+.preview-placeholder,
+.preview-loading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-8);
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-lg);
+  min-height: 420px;
+}
+.preview-placeholder {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.preview-placeholder p {
+  max-width: 320px;
+}
+.preview-hint {
+  text-align: center;
+  margin-top: var(--sp-4);
+}
+
+.preview-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-3);
+}
+.preview-frame {
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  animation: slideUp var(--t-slow) both;
+}
+
+@media (max-width: 980px) {
+  .editor-grid {
+    grid-template-columns: 1fr;
+  }
+  .editor-form {
+    position: static;
+  }
+}

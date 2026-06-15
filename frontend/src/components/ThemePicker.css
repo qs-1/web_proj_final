@@ -1,0 +1,143 @@
+.theme-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+}
+
+.theme-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  text-align: left;
+  background: var(--bg-1);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  transition: border-color var(--t), transform var(--t), box-shadow var(--t);
+  font-family: inherit;
+  color: var(--text);
+}
+.theme-option:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+.theme-option.selected {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-glow);
+}
+
+.theme-preview {
+  position: relative;
+  height: 96px;
+  border-radius: var(--r-md);
+  padding: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.preview-minimal {
+  background: #ffffff;
+}
+.preview-minimal .pv-title {
+  width: 55%;
+  height: 12px;
+  border-radius: 4px;
+  background: #1f2430;
+}
+.preview-minimal .pv-line {
+  width: 100%;
+  height: 7px;
+  border-radius: 4px;
+  background: #d7dae2;
+}
+.preview-minimal .pv-line.short {
+  width: 70%;
+}
+
+.preview-textbook {
+  background: #f6efe3;
+  flex-direction: row;
+  gap: 10px;
+}
+.preview-textbook .pv-title,
+.preview-textbook .pv-line {
+  background: #b9863f;
+}
+.preview-textbook .pv-title {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 45%;
+  height: 12px;
+  border-radius: 3px;
+  background: #6b4f2a;
+}
+.preview-textbook .pv-line {
+  position: absolute;
+  left: 14px;
+  width: 48%;
+  height: 7px;
+  border-radius: 3px;
+  background: #cbb892;
+}
+.preview-textbook .pv-line:nth-of-type(2) {
+  top: 40px;
+}
+.preview-textbook .pv-line.short {
+  top: 54px;
+  width: 34%;
+}
+.preview-textbook .pv-side {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  bottom: 14px;
+  width: 30%;
+  border-radius: 4px;
+  background: #e7d8b8;
+  border-left: 2px solid #c9a86a;
+}
+
+.theme-option-meta {
+  padding: 0 4px 2px;
+}
+.theme-option-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.theme-option-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.theme-check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--r-full);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  display: grid;
+  place-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity var(--t), transform var(--t);
+}
+.theme-option.selected .theme-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@media (max-width: 560px) {
+  .theme-picker {
+    grid-template-columns: 1fr;
+  }
+}
